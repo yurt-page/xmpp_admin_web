@@ -27,21 +27,21 @@ Adhoc.prototype = {
     },
 
     addForm: function (x) {
-        var self = this;
-        var form = $("<form class='form-stacked' action='#'/>");
+        let self = this;
+        let form = $("<form class='form-stacked' action='#'/>");
         form.submit(function(event) {
             self.executeCommand("execute", self.serializeToDataform('form'),
                 function(e) { self.displayResult(e) });
             event.preventDefault();
         });
-        var fieldset = $("<fieldset/>");
+        let fieldset = $("<fieldset/>");
         form.append(fieldset);
         $(x).find("title").each(function() { $("<legend/>").text($(this).text()).appendTo(fieldset); });
         $(x).find("instructions").each(function() { $("<p/>").text($(this).text()).appendTo(fieldset); });
         $(x).find("field").each(function() {
-	    var clearfix = $("<div class='clearfix'/>");
-            var item = self.buildHTMLField(this);
-            var label = $(this).attr("label");
+            let clearfix = $("<div class='clearfix'/>");
+            let item = self.buildHTMLField(this);
+            let label = $(this).attr("label");
             if(label) {
                 $("<label/>").text(label).attr("for", $(this).attr("var")).appendTo(clearfix);
             }
@@ -54,10 +54,10 @@ Adhoc.prototype = {
     },
 
     buildHTMLField: function(fld) {
-        var field = $(fld), html = {
+        let field = $(fld), html = {
             "hidden"	  : "<input type='hidden'/>",
             "boolean"	  : "<input type='checkbox'/>",
-            "fixed"       : "<input type='text' readonly='true'/>",
+            "fixed"       : "<input type='text' readonly='readonly'/>",
             "text-single" : "<input type='text'/>",
             "text-private": "<input type='password'/>",
             "text-multi"  : "<textarea rows='10' cols='70'/>",
@@ -66,9 +66,9 @@ Adhoc.prototype = {
             "list-single" : "<select/>",
             "list-multi"  : "<select multiple='multiple'/>",
         };
-        var type = field.attr('type');
-        var input = $(html[type] || "<input/>");
-        var name = field.attr("var");
+        let type = field.attr('type');
+        let input = $(html[type] || "<input/>");
+        let name = field.attr("var");
 
         input.addClass("df-item");
         if (name) {
@@ -82,7 +82,7 @@ Adhoc.prototype = {
         /* Add possible values to the lists */
         if (type === 'list-multi' || type==='list-single') {
             field.find("option").each(function() {
-                var option = $("<option/>");
+                let option = $("<option/>");
                 option.text($(this).attr("label"));
                 option.val($(this).find("value").text());
                 input.append(option);
@@ -91,7 +91,7 @@ Adhoc.prototype = {
 
         /* Add/select default values */
         field.children("value").each(function() {
-            var value = $(this).text();
+            let value = $(this).text();
             if ((type === "text-multi") || (type === "jid-multi")) {
                 input.text(input.text() + value + "\n"); /* .append() would work, but doesn't escape */
             } else if (type === "list-multi") {
@@ -111,12 +111,12 @@ Adhoc.prototype = {
         $(form).find(".df-item").each(function(){
             st.c("field", {"var": $(this).attr("name")});
             if (this.nodeName.toLowerCase() === "select" && this.multiple) {
-                for (var i = 0; i < this.options.length; i++)
+                for (let i = 0; i < this.options.length; i++)
                     if (this.options[i].selected)
                         st.c("value").t(this.options[i].text).up();
             } else if (this.nodeName.toLowerCase() === "textarea") {
-                var sp_value = this.value.split(/\r?\n|\r/g);
-                for(var i = 0; i < sp_value.length; i++)
+                let sp_value = this.value.split(/\r?\n|\r/g);
+                for(let i = 0; i < sp_value.length; i++)
                     st.c("value").t(sp_value[i]).up();
             } else if (this.nodeName.toLowerCase() === "input" && this.type === "checkbox") {
                 if (this.checked) {
@@ -135,10 +135,10 @@ Adhoc.prototype = {
     },
 
     displayResult: function (result) {
-        var self = this;
-        var status = $(result).find("command").attr("status");
-        var kinds = {'prev': 'Prev', 'next': 'Next', 'complete': 'Complete'};
-	var actions = $(result).find("actions:first");
+        let self = this;
+        let status = $(result).find("command").attr("status");
+        let kinds = {'prev': 'Prev', 'next': 'Next', 'complete': 'Complete'};
+        let actions = $(result).find("actions:first");
 
         $(self.status.view).empty();
         $(result).find("command > *").each(function() {
@@ -149,17 +149,17 @@ Adhoc.prototype = {
             }
         });
         if (status === "executing") {
-	    var controls = $("<div class='actions'/>");
-            for (kind in kinds) {
-		var input;
+            let controls = $("<div class='actions'/>");
+            for (let kind in kinds) {
+                let input;
 		(function (type) {
 		    input = $("<input type='button' disabled='disabled' class='btn' value='" + kinds[type] + "'/>").click(function() {
-			self.executeCommand(type, (type != 'prev') && self.serializeToDataform('form'), function(e) { self.displayResult(e) });
+			self.executeCommand(type, (type !== 'prev') && self.serializeToDataform('form'), function(e) { self.displayResult(e) });
 		    }).appendTo(controls);
 		})(kind);
                 if (actions.find(kind).length > 0)
                     input.removeAttr("disabled");
-		if (actions.attr("execute") == kind)
+		if (actions.attr("execute") === kind)
 		    input.addClass("primary");
             }
 
@@ -175,7 +175,7 @@ Adhoc.prototype = {
     },
 
     runCommand: function (item, callback) {
-        var cb;
+        let cb;
         this.status.cmdNode = $(item).attr("id"); /* Save node of executed command */
         cb = function(result) {
             this.status.sessionid = $(result).find("command").attr("sessionid");
@@ -185,11 +185,12 @@ Adhoc.prototype = {
     },
 
     executeCommand: function (type, childs, callback) {
+        let execIQ
         if (this.status.sessionid)
-            var execIQ = $iq({ type: "set", to: this.status.queryJID, id: connection.getUniqueId() })
+            execIQ = $iq({ type: "set", to: this.status.queryJID, id: connection.getUniqueId() })
                 .c("command", { xmlns: Strophe.NS.ADHOC, node: this.status.cmdNode, sessionid: this.status.sessionid, action: type });
         else
-            var execIQ = $iq({ type: "set", to: this.status.queryJID, id: connection.getUniqueId() })
+            execIQ = $iq({ type: "set", to: this.status.queryJID, id: connection.getUniqueId() })
                 .c("command", { xmlns: Strophe.NS.ADHOC, node: this.status.cmdNode, action: type });
         if (childs)
             execIQ.cnode(childs);
@@ -204,10 +205,10 @@ Adhoc.prototype = {
     },
 
     getCommandNodes: function (callback) {
-        var self = this;
-        var nodesIQ = $iq({ type: "get", to: self.status.queryJID, id: connection.getUniqueId() }).c("query", {xmlns: Strophe.NS.DISCO_ITEMS, node: Strophe.NS.ADHOC});
+        let self = this;
+        let nodesIQ = $iq({ type: "get", to: self.status.queryJID, id: connection.getUniqueId() }).c("query", {xmlns: Strophe.NS.DISCO_ITEMS, node: Strophe.NS.ADHOC});
         connection.sendIQ(nodesIQ, function(result) {
-            var items = $("<ul></ul>");
+            let items = $("<ul></ul>");
             $(result).find("item").each(function() {
                 $("<li></li>").append($("<a href='#' id='" + $(this).attr("node") + "'>" + $(this).attr("name") + "</a>").click(function (event) {
 		    self.cancelCommand(function(){});
@@ -220,11 +221,10 @@ Adhoc.prototype = {
     },
 
     checkFeatures: function (jid, cb, ecb) {
-	var callback;
         if (this.status.sessionid)
             this.cancelCommand();
         this.status.queryJID = jid;
-        var featureIQ = $iq({ type: "get", to: this.status.queryJID, id: connection.getUniqueId() }).c("query", {xmlns: Strophe.NS.DISCO_INFO});
+        let featureIQ = $iq({ type: "get", to: this.status.queryJID, id: connection.getUniqueId() }).c("query", {xmlns: Strophe.NS.DISCO_INFO});
         $(this.status.view).empty();
 
 	function callback(result) {
