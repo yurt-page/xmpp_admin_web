@@ -33,7 +33,7 @@ function _cbNewS2S(e) {
         let jid = item.getElementsByTagName('session')[0].attributes.getNamedItem('jid').value;
         let infos = item.getElementsByTagName('info');
 
-        let entry = $('<li id="' + id + '">' + jid + '</li>');
+        let entry = $(`<li id="${id}">${jid}</li>`);
         let tmp = item.getElementsByTagName('encrypted')[0]
         if (tmp) {
             if (tmp.getElementsByTagName('valid')[0]) {
@@ -52,7 +52,9 @@ function _cbNewS2S(e) {
         metadata.appendTo(entry);
         for (let j = 0; j < infos.length; j++) {
             let info = infos[j];
-            metadata.append('<li><b>' + info.attributes.getNamedItem('name').value + ':</b> ' + info.textContent + '</li>');
+            let infoName = info.attributes.getNamedItem('name').value
+            let infoText = info.textContent
+            metadata.append(`<li><b>${infoName}:</b> ${infoText}</li>`);
         }
         if (infos.length == 0)
             metadata.append('<li>No information available</li>');
@@ -79,7 +81,7 @@ function _cbNewC2S(e) {
         let jid = item.getElementsByTagName('session')[0].attributes.getNamedItem('jid').value;
         let infos = item.getElementsByTagName('info');
 
-        let entry = $('<li id="' + id + '">' + jid + '</li>');
+        let entry = $(`<li id="${id}">${jid}</li>`);
         let tmp = item.getElementsByTagName('encrypted')[0]
         if (tmp) {
             entry.append('<img src="images/encrypted.png" title="encrypted" alt=" (encrypted)" />');
@@ -140,7 +142,8 @@ function onConnect(status) {
         }
     } else if (status == Strophe.Status.CONNECTED) {
         log('Strophe is connected.');
-        connection.sendIQ($iq({to: connection.domain, type: 'get', id: connection.getUniqueId()}).c('adminsub', {xmlns: Strophe.NS.ADMINSUB})
+        connection.sendIQ($iq({to: connection.domain, type: 'get', id: connection.getUniqueId()})
+          .c('adminsub', {xmlns: Strophe.NS.ADMINSUB})
             .c('adminfor'), function(e) {
                 let domainpart = Strophe.getDomainFromJid(connection.jid);
                 let items = e.getElementsByTagName('item');
