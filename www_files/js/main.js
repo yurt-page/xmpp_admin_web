@@ -1,19 +1,19 @@
-var BOSH_SERVICE = '/http-bind/';
-var show_log = false;
+const BOSH_SERVICE = '/http-bind/';
+let show_log = false;
 
 Strophe.addNamespace('C2SSTREAM', 'http://prosody.im/streams/c2s');
 Strophe.addNamespace('S2SSTREAM', 'http://prosody.im/streams/s2s');
 Strophe.addNamespace('ADMINSUB', 'http://prosody.im/adminsub');
 Strophe.addNamespace('CAPS', 'http://jabber.org/protocol/caps');
 
-var localJID = null;
-var connection   = null;
+let localJID = null;
+let connection   = null;
 
-var adminsubHost = null;
-var adhocControl = new Adhoc('#adhocDisplay', function() {});
+let adminsubHost = null;
+let adhocControl = new Adhoc('#adhocDisplay', function() {});
 
 function log(msg) {
-    var entry = $('<div></div>').append(document.createTextNode(msg));
+    let entry = $('<div></div>').append(document.createTextNode(msg));
     $('#log').append(entry);
 }
 
@@ -26,16 +26,16 @@ function rawOutput(data) {
 }
 
 function _cbNewS2S(e) {
-    var items, item, entry, tmp, retract, id, jid, infos, info, metadata;
-    items = e.getElementsByTagName('item');
-    for (i = 0; i < items.length; i++) {
-        item = items[i];
-        id = item.attributes.getNamedItem('id').value;
-        jid = item.getElementsByTagName('session')[0].attributes.getNamedItem('jid').value;
-        infos = item.getElementsByTagName('info');
+    let items = e.getElementsByTagName('item');
+    for (let i = 0; i < items.length; i++) {
+        let item = items[i];
+        let id = item.attributes.getNamedItem('id').value;
+        let jid = item.getElementsByTagName('session')[0].attributes.getNamedItem('jid').value;
+        let infos = item.getElementsByTagName('info');
 
-        entry = $('<li id="' + id + '">' + jid + '</li>');
-        if (tmp = item.getElementsByTagName('encrypted')[0]) {
+        let entry = $('<li id="' + id + '">' + jid + '</li>');
+        let tmp = item.getElementsByTagName('encrypted')[0]
+        if (tmp) {
             if (tmp.getElementsByTagName('valid')[0]) {
                 entry.append('<img src="images/secure.png" title="encrypted (certificate valid)" alt=" (secure) (encrypted)" />');
             } else {
@@ -45,13 +45,13 @@ function _cbNewS2S(e) {
         if (item.getElementsByTagName('compressed')[0]) {
             entry.append('<img src="images/compressed.png" title="compressed" alt=" (compressed)" />');
         }
-        metadata = $('<ul/>').css('display', 'none');
+        let metadata = $('<ul/>').css('display', 'none');
         entry.on('click', function() {
             $(this).find("ul").slideToggle();
         });
         metadata.appendTo(entry);
-        for (j = 0; j < infos.length; j++) {
-            info = infos[j];
+        for (let j = 0; j < infos.length; j++) {
+            let info = infos[j];
             metadata.append('<li><b>' + info.attributes.getNamedItem('name').value + ':</b> ' + info.textContent + '</li>');
         }
         if (infos.length == 0)
@@ -63,52 +63,54 @@ function _cbNewS2S(e) {
             entry.appendTo('#s2sin');
         }
     }
-    retract = e.getElementsByTagName('retract')[0];
+    let retract = e.getElementsByTagName('retract')[0];
     if (retract) {
-        id = retract.attributes.getNamedItem('id').value;
+        let id = retract.attributes.getNamedItem('id').value;
         $('#' + id).remove();
     }
     return true;
 }
 
 function _cbNewC2S(e) {
-    var items, item, entry, retract, id, jid, infos, info, metadata;
-    items = e.getElementsByTagName('item');
-    for (i = 0; i < items.length; i++) {
-        item = items[i];
-        id = item.attributes.getNamedItem('id').value;
-        jid = item.getElementsByTagName('session')[0].attributes.getNamedItem('jid').value;
-        infos = item.getElementsByTagName('info');
-        entry = $('<li id="' + id + '">' + jid + '</li>');
-        if (item.getElementsByTagName('encrypted')[0]) {
+    let items = e.getElementsByTagName('item');
+    for (let i = 0; i < items.length; i++) {
+        let item = items[i];
+        let id = item.attributes.getNamedItem('id').value;
+        let jid = item.getElementsByTagName('session')[0].attributes.getNamedItem('jid').value;
+        let infos = item.getElementsByTagName('info');
+
+        let entry = $('<li id="' + id + '">' + jid + '</li>');
+        let tmp = item.getElementsByTagName('encrypted')[0]
+        if (tmp) {
             entry.append('<img src="images/encrypted.png" title="encrypted" alt=" (encrypted)" />');
         }
         if (item.getElementsByTagName('compressed')[0]) {
             entry.append('<img src="images/compressed.png" title="compressed" alt=" (compressed)" />');
         }
-        metadata = $('<ul/>').css('display', 'none');
+        let metadata = $('<ul/>').css('display', 'none');
         entry.on('click', function() {
             $(this).find("ul").slideToggle();
         });
         metadata.appendTo(entry);
-        for (j = 0; j < infos.length; j++) {
-            info = infos[j];
+        for (let j = 0; j < infos.length; j++) {
+            let info = infos[j];
             metadata.append('<li><b>' + info.attributes.getNamedItem('name').value + ':</b> ' + info.textContent + '</li>');
         }
-        if (infos.length == 0)
+        if (infos.length == 0) {
             metadata.append('<li>No information available</li>');
+        }
         entry.appendTo('#c2s');
     }
-    retract = e.getElementsByTagName('retract')[0];
+    let retract = e.getElementsByTagName('retract')[0];
     if (retract) {
-        id = retract.attributes.getNamedItem('id').value;
+        let id = retract.attributes.getNamedItem('id').value;
         $('#' + id).remove();
     }
     return true;
 }
 
 function _cbAdminSub(e) {
-    var node = e.getElementsByTagName('items')[0].attributes.getNamedItem('node').value;
+    let node = e.getElementsByTagName('items')[0].attributes.getNamedItem('node').value;
     if (node == Strophe.NS.C2SSTREAM) {
         _cbNewC2S(e);
     } else if (node == Strophe.NS.S2SSTREAM) {
@@ -140,23 +142,23 @@ function onConnect(status) {
         log('Strophe is connected.');
         connection.sendIQ($iq({to: connection.domain, type: 'get', id: connection.getUniqueId()}).c('adminsub', {xmlns: Strophe.NS.ADMINSUB})
             .c('adminfor'), function(e) {
-                var items;
-                var domainpart = Strophe.getDomainFromJid(connection.jid);
-                items = e.getElementsByTagName('item');
+                let domainpart = Strophe.getDomainFromJid(connection.jid);
+                let items = e.getElementsByTagName('item');
                 if (items.length == 0) {
                     alert("You are not an administrator");
                     connection.disconnect();
                     return false;
                 }
-                for (i = 0; i < items.length; i++) {
-                    var host = $(items[i]).text();
+                for (let i = 0; i < items.length; i++) {
+                    let host = $(items[i]).text();
                     $('<option/>').text(host).prop('selected', host == domainpart).appendTo('#host');
                 }
                 showDisconnect();
                 adminsubHost = $('#host').val();
                 adhocControl.checkFeatures(adminsubHost,
                     function () { adhocControl.getCommandNodes(function (result) { $('#adhocDisplay').empty(); $('#adhocCommands').html(result); }) },
-                    function () { $('#adhocCommands').empty(); $('#adhocDisplay').html('<p>This host does not support commands</p>'); });
+                    function () { $('#adhocCommands').empty(); $('#adhocDisplay').html('<p>This host does not support commands</p>'); }
+                );
                 connection.addHandler(_cbAdminSub, Strophe.NS.ADMINSUB + '#event', 'message');
                 connection.send($iq({to: adminsubHost, type: 'set', id: connection.getUniqueId()}).c('adminsub', {xmlns: Strophe.NS.ADMINSUB})
                     .c('subscribe', {node: Strophe.NS.C2SSTREAM}));
@@ -203,9 +205,9 @@ $(document).ready(function () {
     });
 
     $('#cred').on('submit', function (event) {
-        var button = $('#connect').get(0);
-        var jid = $('#jid');
-        var pass = $('#pass');
+        let button = $('#connect').get(0);
+        let jid = $('#jid');
+        let pass = $('#pass');
         localJID = jid.get(0).value;
 
         $('#log').empty();
@@ -220,7 +222,7 @@ $(document).ready(function () {
 
     $('#adhocMenu, #serverMenu, #clientMenu').click(function (event) {
         event.preventDefault();
-        var tab = $(this).attr('href');
+        let tab = $(this).attr('href');
         $('#main > div').hide();
         $(tab).fadeIn('fast');
     });
