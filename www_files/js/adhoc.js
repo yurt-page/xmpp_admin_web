@@ -1,3 +1,8 @@
+// adhocweb
+// Copyright (c) 2010-2013 Florian Zeitz
+// This project is MIT licensed.
+// http://git.babelmonkeys.de/?p=adhocweb.git;a=blob_plain;f=js/adhoc.js
+
 /*
  * Implementation of ECMA Script 5 like bind from:
  * https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function/bind
